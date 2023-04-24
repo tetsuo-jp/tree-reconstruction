@@ -1,2 +1,2 @@
 # tree-reconstruction
-Algorithms published in the paper "A Note on Efficient Binary Tree Construction"
+Algorithms in a manuscript entitled "A Note on Efficient Binary Tree Construction"
