@@ -47,6 +47,10 @@ Node *topN(void)
 Node* createN(void)
 {
     Node* node = (Node*)malloc(sizeof(Node));
+    if (node == NULL) {
+        fprintf(stderr, "Cannot allocate memory\n");
+        exit(EXIT_FAILURE);
+    }
 
     node->left = NULL;
     node->right = NULL;
@@ -87,6 +91,18 @@ Label topL(void)
     return stackL[spL-1];
 }
 
+void push(Label l, Node *n)
+{
+    pushN(n);
+    pushL(l);
+}
+
+Node *pop(void)
+{
+    popL();
+    return popN();
+}
+
 int end_comp = 0, lbl_comp = 0;
 
 Node *algo_m(int preorder[], int n)
@@ -98,23 +114,23 @@ Node *algo_m(int preorder[], int n)
 
     /* Block A */
     i = 1;
-    x = createN(); pushN(x); pushL(X); /* initialize the node and label stacks with the bottom marker X (= n+1) */
-    root = createN(); pushN(root); pushL(preorder[0]);
+    x = createN(); push(X, x); /* initialize the node and label stacks with the bottom marker X (= n+1) */
+    root = createN(); push(preorder[0], root);
     x->left = root;
 
     while (end_comp++, i < n) { /* Test α */
 	if (lbl_comp++, preorder[i] < topL()) { /* Test β */
 	    /* Block B */
 	    topN()->left = createN(); /* create the left child of the top node */
-	    pushN(topN()->left); pushL(preorder[i]);
+	    push(preorder[i], topN()->left);
 	} else {
 	    do {
 		/* Block C */
-		prev = popN(); popL();
+		prev = pop();
 	    } while (lbl_comp++, preorder[i] >= topL()); /* Test not β */
 	    /* Block D */
 	    prev->right = createN(); /* create the right child of the previous top node */
-	    pushN(prev->right); pushL(preorder[i]);
+	    push(preorder[i], prev->right);
 	}
 	/* Block E */
 	i++;
@@ -135,18 +151,18 @@ Node *algo_a(int preorder[], int n)
 
     /* Block A */
     i = 1;
-    x = createN(); pushN(x); pushL(X); /* initialize the node and label stacks with the bottom marker X */
-    root = createN(); pushN(root); pushL(preorder[0]);
+    x = createN(); push(X, x); /* initialize the node and label stacks with the bottom marker X */
+    root = createN(); push(preorder[0], root);
     x->left = root;
 
     while (1) {
 	if (lbl_comp++, preorder[i] < topL()) { /* Test β */
 	    /* Block B */
 	    topN()->left = createN(); /* create the left child of the top node */
-	    pushN(topN()->left); pushL(preorder[i]);
+	    push(preorder[i], topN()->left);
 	} else {
 	    /* Block C */
-	    prev = popN(); popL();
+	    prev = pop();
 	    if (lbl_comp++, preorder[i] >= topL()) { /* Test not β */
 		if (end_comp++, i >= n) /* Test α */
 		    break;
@@ -154,7 +170,7 @@ Node *algo_a(int preorder[], int n)
 		    /* Block C */
 		    /* Check if the stack is empty before popping elements */
 		    if (spN > 0) {
-			prev = popN(); popL();
+			prev = pop();
 		    } else {
 			fprintf(stderr, "Error: Stack is empty\n");
 			exit(EXIT_FAILURE);
@@ -164,7 +180,7 @@ Node *algo_a(int preorder[], int n)
 	    /* Block D */
 	    if (prev != NULL) {
 		prev->right = createN(); /* create the right child of one of the previous top nodes */
-		pushN(prev->right); pushL(preorder[i]);
+		push(preorder[i], prev->right);
 	    } else {
 		fprintf(stderr, "Error: prev is NULL\n");
 		exit(EXIT_FAILURE);
