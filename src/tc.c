@@ -91,7 +91,7 @@ Label topL(void)
     return stackL[spL-1];
 }
 
-void push(Label l, Node *n)
+void pushLN(Label l, Node *n)
 {
     pushN(n);
     pushL(l);
@@ -114,15 +114,15 @@ Node *algo_m(int preorder[], int n)
 
     /* Block A */
     i = 1;
-    x = createN(); push(X, x); /* initialize the node and label stacks with the bottom marker X (= n+1) */
-    root = createN(); push(preorder[0], root);
+    x = createN(); pushLN(X, x); /* initialize the node and label stacks with the bottom marker X (= n+1) */
+    root = createN(); pushLN(preorder[0], root);
     x->left = root;
 
     while (end_comp++, i < n) { /* Test α */
 	if (lbl_comp++, preorder[i] < topL()) { /* Test β */
 	    /* Block B */
 	    topN()->left = createN(); /* create the left child of the top node */
-	    push(preorder[i], topN()->left);
+	    pushLN(preorder[i], topN()->left);
 	} else {
 	    do {
 		/* Block C */
@@ -130,7 +130,7 @@ Node *algo_m(int preorder[], int n)
 	    } while (lbl_comp++, preorder[i] >= topL()); /* Test not β */
 	    /* Block D */
 	    prev->right = createN(); /* create the right child of the previous top node */
-	    push(preorder[i], prev->right);
+	    pushLN(preorder[i], prev->right);
 	}
 	/* Block E */
 	i++;
@@ -151,15 +151,15 @@ Node *algo_a(int preorder[], int n)
 
     /* Block A */
     i = 1;
-    x = createN(); push(X, x); /* initialize the node and label stacks with the bottom marker X */
-    root = createN(); push(preorder[0], root);
+    x = createN(); pushLN(X, x); /* initialize the node and label stacks with the bottom marker X */
+    root = createN(); pushLN(preorder[0], root);
     x->left = root;
 
     while (1) {
 	if (lbl_comp++, preorder[i] < topL()) { /* Test β */
 	    /* Block B */
 	    topN()->left = createN(); /* create the left child of the top node */
-	    push(preorder[i], topN()->left);
+	    pushLN(preorder[i], topN()->left);
 	} else {
 	    /* Block C */
 	    prev = pop();
@@ -180,7 +180,7 @@ Node *algo_a(int preorder[], int n)
 	    /* Block D */
 	    if (prev != NULL) {
 		prev->right = createN(); /* create the right child of one of the previous top nodes */
-		push(preorder[i], prev->right);
+		pushLN(preorder[i], prev->right);
 	    } else {
 		fprintf(stderr, "Error: prev is NULL\n");
 		exit(EXIT_FAILURE);
