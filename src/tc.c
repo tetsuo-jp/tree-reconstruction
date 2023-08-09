@@ -97,7 +97,7 @@ void pushLN(Label l, Node *n)
     pushL(l);
 }
 
-Node *pop(void)
+Node *popLN(void)
 {
     popL();
     return popN();
@@ -126,7 +126,7 @@ Node *algo_m(int preorder[], int n)
 	} else {
 	    do {
 		/* Block C */
-		prev = pop();
+		prev = popLN();
 	    } while (lbl_comp++, preorder[i] >= topL()); /* Test not β */
 	    /* Block D */
 	    prev->right = createN(); /* create the right child of the previous top node */
@@ -162,7 +162,7 @@ Node *algo_a(int preorder[], int n)
 	    pushLN(preorder[i], topN()->left);
 	} else {
 	    /* Block C */
-	    prev = pop();
+	    prev = popLN();
 	    if (lbl_comp++, preorder[i] >= topL()) { /* Test not β */
 		if (end_comp++, i >= n) /* Test α */
 		    break;
@@ -170,7 +170,7 @@ Node *algo_a(int preorder[], int n)
 		    /* Block C */
 		    /* Check if the stack is empty before popping elements */
 		    if (spN > 0) {
-			prev = pop();
+			prev = popLN();
 		    } else {
 			fprintf(stderr, "Error: Stack is empty\n");
 			exit(EXIT_FAILURE);
