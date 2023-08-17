@@ -114,9 +114,8 @@ Node *algo_m(int preorder[], int n)
 
     /* Block A */
     i = 1;
-    x = createN(); pushLN(X, x); /* initialize the node and label stacks with the bottom marker X (= n+1) */
+    pushLN(X, NULL); /* initialize the node and label stacks with the bottom marker X (= n+1) */
     root = createN(); pushLN(preorder[0], root);
-    x->left = root;
 
     while (end_comp++, i < n) { /* Test α */
 	if (lbl_comp++, preorder[i] < topL()) { /* Test β */
@@ -142,7 +141,7 @@ Node *algo_m(int preorder[], int n)
 Node *algo_a(int preorder[], int n)
 {
     int i;
-    struct node *x;
+    struct node *vroot;
     struct node *prev;
     struct node *root;
 
@@ -151,9 +150,9 @@ Node *algo_a(int preorder[], int n)
 
     /* Block A */
     i = 1;
-    x = createN(); pushLN(X, x); /* initialize the node and label stacks with the bottom marker X */
+    vroot = createN(); pushLN(X, vroot); /* initialize the node and label stacks with the bottom marker X */
     root = createN(); pushLN(preorder[0], root);
-    x->left = root;
+    vroot->left = root;
 
     while (1) {
 	if (lbl_comp++, preorder[i] < topL()) { /* Test β */
@@ -164,7 +163,7 @@ Node *algo_a(int preorder[], int n)
 	    /* Block C */
 	    prev = popLN();
 	    if (lbl_comp++, preorder[i] >= topL()) { /* Test not β */
-		if (end_comp++, i >= n) /* Test α */
+		if (end_comp++, i >= n) /* Test not α */
 		    break;
 		do {
 		    /* Block C */
@@ -189,6 +188,8 @@ Node *algo_a(int preorder[], int n)
 	/* Block E */
 	i++;
     }
+
+    free(vroot);
 
     return root;
 }
