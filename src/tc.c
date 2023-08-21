@@ -17,7 +17,8 @@
 #include <unistd.h>		/* getopt */
 
 #define Label int
-#define X     n+1              	/* ??? why not n? */
+#define X     n+1		/* virtual label */
+#define MAX_LENGTH 1024	/* max. length of input i-p seq. */
 
 struct node {
     struct node* left;
@@ -74,7 +75,7 @@ void printTree(Node* node)
 }
 
 int spL = 0;
-Label stackL[128];
+Label stackL[MAX_LENGTH];
 
 void pushL(Label x)
 {
@@ -108,9 +109,7 @@ int end_comp = 0, lbl_comp = 0;
 Node *algo_m(int preorder[], int n)
 {
     int i;
-    struct node *x;
-    struct node *prev;
-    struct node *root;
+    struct node *prev, *root;
 
     /* Block A */
     i = 1;
@@ -141,14 +140,10 @@ Node *algo_m(int preorder[], int n)
 Node *algo_a(int preorder[], int n)
 {
     int i;
-    struct node *vroot;
-    struct node *prev;
-    struct node *root;
+    struct node *vroot, *prev, *root;
 
     /* Block A' */
-    preorder[n] = X+1;            /* virtual label (X = n+1) */
-
-    /* Block A */
+    preorder[n] = X;            /* virtual label (X = n+1) */
     i = 1;
     vroot = createN(); pushLN(X, vroot); /* initialize the node and label stacks with the bottom marker X */
     root = createN(); pushLN(preorder[0], root);
@@ -174,7 +169,7 @@ Node *algo_a(int preorder[], int n)
 			fprintf(stderr, "Error: Stack is empty\n");
 			exit(EXIT_FAILURE);
 		    }
-		} while (preorder[i] >= topL()); /* Test not β */
+		} while (lbl_comp++, preorder[i] >= topL()); /* Test not β */
 	    }
 	    /* Block D */
 	    if (prev != NULL) {
@@ -194,16 +189,75 @@ Node *algo_a(int preorder[], int n)
     return root;
 }
 
+Node *algo_b(int preorder[], int n)
+{
+    int i;
+    struct node *vroot, *vroot2, *prev, *root;
+
+    /* Block A'' */
+    preorder[n] = X+1;            /* virtual label (X = n+1) */
+    i = 1;
+    vroot = createN(); pushLN(X+1, vroot); /* initialize the node and label stacks with the bottom marker X+1 */
+    vroot2 = createN(); pushLN(X, vroot2);
+    root = createN(); pushLN(preorder[0], root);
+    vroot->left = vroot2;
+    vroot2->left = root;
+
+    while (1) {
+	if (lbl_comp++, preorder[i] < topL()) { /* Test β */
+	    /* Block B */
+	    topN()->left = createN(); /* create the left child of the top node */
+	    pushLN(preorder[i], topN()->left);
+	} else {
+	    /* Block C */
+	    prev = popLN();
+	    if (lbl_comp++, preorder[i] >= topL()) { /* Test not β */
+		/* Block C */
+		prev = popLN();
+		if (lbl_comp++, preorder[i] >= topL()) { /* Test not β */
+		    if (end_comp++, i >= n) /* Test not α */
+			break;
+		    do {
+			/* Block C */
+			/* Check if the stack is empty before popping elements */
+			if (spN > 0) {
+			    prev = popLN();
+			} else {
+			    fprintf(stderr, "Error: Stack is empty\n");
+			    exit(EXIT_FAILURE);
+			}
+		    } while (lbl_comp++, preorder[i] >= topL()); /* Test not β */
+		}
+	    }
+	    /* Block D */
+	    if (prev != NULL) {
+		prev->right = createN(); /* create the right child of one of the previous top nodes */
+		pushLN(preorder[i], prev->right);
+	    } else {
+		fprintf(stderr, "Error: prev is NULL\n");
+		exit(EXIT_FAILURE);
+	    }
+	}
+	/* Block E */
+	i++;
+    }
+
+    free(vroot->left);		/* vroot2 */
+    free(vroot);
+
+    return root;
+}
+
 int main(int argc, char *argv[])
 {
-    char str[1024], *p, i = 0, n;
-    int length, preorder[130];
+    char str[MAX_LENGTH], *p, i = 0, n;
+    int length, preorder[MAX_LENGTH];
     Node *root;
     int opt;
     int debug = 0;
-    int algorithm = 'a';
+    int algorithm = 'a';	/* default algorithm */
 
-    while ((opt = getopt(argc, argv, "adm")) != -1)
+    while ((opt = getopt(argc, argv, "abdm")) != -1)
     {
         switch (opt)
         {
@@ -212,6 +266,9 @@ int main(int argc, char *argv[])
                 break;
             case 'a':
 		algorithm = 'a';
+                break;
+            case 'b':
+		algorithm = 'b';
                 break;
             case 'm':
 		algorithm = 'm';
@@ -246,6 +303,9 @@ int main(int argc, char *argv[])
     switch (algorithm) {
     case 'a':
 	root = algo_a(preorder, n);
+	break;
+    case 'b':
+	root = algo_b(preorder, n);
 	break;
     case 'm':
 	root = algo_m(preorder, n);
