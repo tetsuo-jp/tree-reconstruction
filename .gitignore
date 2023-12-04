@@ -50,6 +50,17 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-src/tc
 
+# Target files
+src/tc
+src/gen_input
+
+# Haskell files
+*.hi
+*.hs
+
+# trees
+input/all_??.txt.bz2
+
+# Emacs backup files
 *~
