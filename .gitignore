@@ -57,7 +57,7 @@ src/gen_input
 
 # Haskell files
 *.hi
-*.hs
+#*.hs
 
 # trees
 input/all_??.txt.bz2
