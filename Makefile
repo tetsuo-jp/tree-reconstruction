@@ -1,6 +1,6 @@
 TARGET=tc
 
-all: test
+all: test01
 
 src/$(TARGET): src/$(TARGET).c
 
@@ -22,7 +22,7 @@ veryclean: clean
 test01: src/$(TARGET)
 	zcat input/all_01.txt.gz | ./src/$(TARGET) -d
 
-test02: #完全2分木
+test02: src/$(TARGET) #完全2分木
 	echo 2,1,3 | ./src/tc -a -d
 	echo 4,2,1,3,6,5,7 | ./src/tc -b -d
 	echo 8,4,2,1,3,6,5,7,12,10,9,11,14,13,15 | ./src/tc -b -d
@@ -37,7 +37,7 @@ test03: gen_inputs src/$(TARGET)
 		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -d -b; done; \
 	done
 
-test04:
+test04: src/$(TARGET)
 	for f in 06; do \
 		echo "Processing $${f} by Makinen M";\
 		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -m; done; \
