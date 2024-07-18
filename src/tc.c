@@ -1,7 +1,7 @@
 /*
-   Algorithm A from:
+   Algorithm N from:
    Tetsuo Yokoyama, Robert Glueck.
-   "A Note on Efficient Binary Tree Construction."
+   "Faster Construction of Binary Trees from Their Traversals"
 
              label comparison | end comparison | Total
    best  case       n+1       |       1        |  n+2
@@ -137,7 +137,7 @@ Node *algo_m(int ip[], int n)
     return root;
 }
 
-Node *algo_a(int ip[], int n)
+Node *algo_n(int ip[], int n)
 {
     int i;
     struct node *vroot, *prev, *root;
@@ -254,17 +254,17 @@ int main(int argc, char *argv[])
     Node *root;
     int opt;
     int debug = 0;
-    int algorithm = 'a';	/* default algorithm */
+    int algorithm = 'n';	/* default algorithm */
 
-    while ((opt = getopt(argc, argv, "abdm")) != -1)
+    while ((opt = getopt(argc, argv, "bdmn")) != -1)
     {
         switch (opt)
         {
             case 'd':
 		debug = 1;
                 break;
-            case 'a':
-		algorithm = 'a';
+            case 'n':
+		algorithm = 'n';
                 break;
             case 'b':
 		algorithm = 'b';
@@ -300,8 +300,8 @@ int main(int argc, char *argv[])
     n = i + 1;
 
     switch (algorithm) {
-    case 'a':
-	root = algo_a(ip, n);
+    case 'n':
+	root = algo_n(ip, n);
 	break;
     case 'b':
 	root = algo_b(ip, n);

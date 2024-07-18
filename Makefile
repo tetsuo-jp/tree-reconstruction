@@ -23,7 +23,7 @@ test01: src/$(TARGET)
 	zcat input/all_01.txt.gz | ./src/$(TARGET) -d
 
 test02: src/$(TARGET) #完全2分木
-	echo 2,1,3 | ./src/tc -a -d
+	echo 2,1,3 | ./src/tc -n -d
 	echo 4,2,1,3,6,5,7 | ./src/tc -b -d
 	echo 8,4,2,1,3,6,5,7,12,10,9,11,14,13,15 | ./src/tc -b -d
 
@@ -32,7 +32,7 @@ test03: gen_inputs src/$(TARGET)
 		echo "Processing $${f} by Makinen M";\
 		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -d -m; done; \
 		echo "Processing $${f} by Algorithm A";\
-		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -d -a; done; \
+		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -d -n; done; \
 		echo "Processing $${f} by Algorithm B";\
 		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -d -b; done; \
 	done
@@ -42,5 +42,5 @@ test04: src/$(TARGET)
 		echo "Processing $${f} by Makinen M";\
 		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -m; done; \
 		echo "Processing $${f} by Algorithm A";\
-		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -a; done; \
+		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -n; done; \
 	done
