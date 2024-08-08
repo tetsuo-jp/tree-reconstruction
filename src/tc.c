@@ -188,6 +188,7 @@ Node *algo_n(int ip[], int n)
     return root;
 }
 
+// N with the inner loop unrolled twice
 Node *algo_b(int ip[], int n)
 {
     int i;
@@ -247,6 +248,39 @@ Node *algo_b(int ip[], int n)
     return root;
 }
 
+Node *algo_c(int ip[], int n)
+{
+    int i;
+    struct node *root, *c;
+    int processed[MAX_LENGTH] = {0};
+
+    /* Block A'' */
+    ip[n] = X+1;            /* virtual label (X = n+1) */
+    i = 1;
+    c = root = node(); push(ip[0], root);
+    processed[ip[0]] = 1;
+
+    while (1) {
+	if (lbl_comp++, ip[i-1] > ip[i]) { /* Test β */
+	    /* Block B' */
+	    c = c->left = node(); /* create the left child */
+	} else {
+	    /* Block C' */
+            c = pop()->right = node();
+	}
+        if (end_comp++, !processed[ip[i]+1]) {
+            if (end_comp++, i >= n) /* Test not α */
+                break;
+            push(ip[i], c);
+        }
+        processed[ip[i]] = 1;
+	/* Block E */
+	i++;
+    }
+
+    return root;
+}
+
 int main(int argc, char *argv[])
 {
     char str[MAX_LENGTH], *p, i = 0, n;
@@ -256,7 +290,7 @@ int main(int argc, char *argv[])
     int debug = 0;
     int algorithm = 'n';	/* default algorithm */
 
-    while ((opt = getopt(argc, argv, "bdmn")) != -1)
+    while ((opt = getopt(argc, argv, "bcdmn")) != -1)
     {
         switch (opt)
         {
@@ -271,6 +305,9 @@ int main(int argc, char *argv[])
                 break;
             case 'm':
 		algorithm = 'm';
+                break;
+            case 'c':
+		algorithm = 'c';
                 break;
             case '?':
                 fprintf(stderr, "Unknown option\n");
@@ -305,6 +342,9 @@ int main(int argc, char *argv[])
 	break;
     case 'b':
 	root = algo_b(ip, n);
+	break;
+    case 'c':
+	root = algo_c(ip, n);
 	break;
     case 'm':
 	root = algo_m(ip, n);
