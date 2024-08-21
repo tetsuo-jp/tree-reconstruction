@@ -21,7 +21,7 @@ veryclean: clean
 	rm -f input/all_??.txt.bz2
 
 test01: src/$(TARGET)
-	zcat input/all_01.txt.gz | ./src/$(TARGET) -d
+	bzcat input/all_01.txt.bz2 | ./src/$(TARGET) -d
 
 test02: src/$(TARGET) #完全2分木
 	echo 2,1,3 | ./src/tc -n -d
@@ -47,3 +47,34 @@ test04: src/$(TARGET)
 		echo "Processing $${f} by Algorithm N";\
 		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -n; done; \
 	done
+
+mmm:
+	for f in 12 13 14; do \
+		time sh -c "bzcat input/all_$$f.txt.bz2 | while read line; do echo \"\$$line\" | ./src/tc -mt; done > output_expected/$$f.txt";\
+	done
+
+test05: src/$(TARGET)
+	for f in 01 02 03 04 05 06 07 08 09 10 11 12 13 14; do \
+		echo "size = $$f ---------------------------";\
+		for algo in m n c; do \
+			ALGO=$$(echo $$algo | tr 'a-z' 'A-Z'); \
+			echo "Processing $$f by Algorithm $${ALGO}";\
+			time sh -c "bzcat input/all_$$f.txt.bz2 | while read line; do echo \"\$$line\" | ./src/tc -$${algo}t; done > output/test05_$${ALGO}_size$$f.txt";\
+			bzip2 -c output/test05_$${ALGO}_size$$f.txt > output/test05_$${ALGO}_size$$f.txt.bz2;\
+			rm -f output/test05_$${ALGO}_size$$f.txt;\
+			zcmp output_expected/$$f.txt.bz2 output/test05_$${ALGO}_size$$f.txt.bz2;\
+		done;\
+	done
+
+test06: src/$(TARGET)
+	for f in 01 02 03 04 05 06 07 08 09 10 11 12 13 14; do \
+		echo "size = $$f ---------------------------";\
+		for algo in m n c; do \
+			ALGO=$$(echo $$algo | tr 'a-z' 'A-Z'); \
+			echo "Processing $$f by Algorithm $${ALGO}";\
+			time sh -c "bzcat input/all_$$f.txt.bz2 | while read line; do echo \"\$$line\" | ./src/tc -$${algo}; done";\
+		done;\
+	done
+
+
+.PHONEY: clean
