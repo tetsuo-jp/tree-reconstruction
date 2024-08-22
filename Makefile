@@ -1,11 +1,12 @@
 TARGET=tc
+GHC:=ghc
 
 all: test01
 
 src/$(TARGET): src/$(TARGET).c
 
 src/gen_input: src/gen_input.hs
-	(cd src; ghc -O2 gen_input.hs)
+	(cd src; $(GHC) -O2 gen_input.hs)
 
 gen_inputs: src/gen_input
 	for i in 01 02 03 04 05 06 07 08 09 10 11 12 13 14; do \
@@ -31,7 +32,7 @@ test03: gen_inputs src/$(TARGET)
 	for f in 01 02 03 04; do \
 		echo "Processing $${f} by Makinen M";\
 		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -d -m; done; \
-		echo "Processing $${f} by Algorithm A";\
+		echo "Processing $${f} by Algorithm N";\
 		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -d -n; done; \
 		echo "Processing $${f} by Algorithm B";\
 		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -d -b; done; \
@@ -41,6 +42,6 @@ test04: src/$(TARGET)
 	for f in 06; do \
 		echo "Processing $${f} by Makinen M";\
 		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -m; done; \
-		echo "Processing $${f} by Algorithm A";\
+		echo "Processing $${f} by Algorithm N";\
 		bzcat input/all_$${f}.txt.bz2 | while read line; do echo "$$line" | ./src/tc -n; done; \
 	done
