@@ -15,20 +15,21 @@
 #include <stdlib.h>
 #include <string.h>             /* strlen */
 #include <unistd.h>		/* getopt */
+#include <stdbool.h>
 
 #define Label int
 #define X     n+1		/* virtual label */
-#define MAX_LENGTH 1024	/* max. length of input i-p seq. */
+#define MAX_LENGTH 128          /* max. length of input i-p seq. */
 
 struct node {
-    struct node* left;
-    struct node* right;
+    struct node *left;
+    struct node *right;
 };
 
 typedef struct node Node;
 
 int spN = 0;
-Node *stackN[128];
+Node *stackN[MAX_LENGTH];
 
 void pushN(Node *x)
 {
@@ -45,21 +46,27 @@ Node *topN(void)
     return stackN[spN-1];
 }
 
-Node* node(void)
+Node *node(void)
 {
-    Node* node = (Node*)malloc(sizeof(Node));
+    Node *node = (Node*)calloc(1, sizeof(Node));
     if (node == NULL) {
-        fprintf(stderr, "Cannot allocate memory\n");
+        perror("Cannot allocate memory");
         exit(EXIT_FAILURE);
     }
-
-    node->left = NULL;
-    node->right = NULL;
-
     return node;
 }
 
-void printTree(Node* node)
+Node *node_array(int n)
+{
+    Node *nodes = (Node*)calloc(n, sizeof(Node));
+    if (nodes == NULL) {
+        perror("Cannot allocate memory");
+        exit(EXIT_FAILURE);
+    }
+    return nodes;
+}
+
+void printTree(Node *node)
 {
     if (node != NULL) {
         if (node->left == NULL && node->right == NULL) {
@@ -79,6 +86,10 @@ Label stackL[MAX_LENGTH];
 
 void pushL(Label x)
 {
+    if (spL >= MAX_LENGTH) {
+        fprintf(stderr, "Error: stack overflow in pushL!\n");
+        exit(EXIT_FAILURE);
+    }
     stackL[spL++] = x;
 }
 
@@ -109,7 +120,7 @@ int end_comp = 0, lbl_comp = 0;
 Node *algo_m(int ip[], int n)
 {
     int i;
-    struct node *prev, *root, *vroot;
+    Node *prev, *root, *vroot;
 
     /* Block A */
     i = 1;
@@ -140,7 +151,7 @@ Node *algo_m(int ip[], int n)
 Node *algo_n(int ip[], int n)
 {
     int i;
-    struct node *vroot, *prev, *root;
+    Node *vroot, *prev, *root;
 
     /* Block A' */
     ip[n] = X+1;            /* add virtual right child Y = X + 1 */
@@ -188,10 +199,11 @@ Node *algo_n(int ip[], int n)
     return root;
 }
 
+// N with the inner loop unrolled twice
 Node *algo_b(int ip[], int n)
 {
     int i;
-    struct node *vroot, *vroot2, *prev, *root;
+    Node *vroot, *vroot2, *prev, *root;
 
     /* Block A'' */
     ip[n] = X+1;            /* virtual label (X = n+1) */
@@ -247,16 +259,175 @@ Node *algo_b(int ip[], int n)
     return root;
 }
 
+// Algorithm C': minimize the number of label comparisons
+//  with sentinel
+Node *algo_c2(int ip[], int n)
+{
+    int i;
+    Node *root, *c;
+    int processed[MAX_LENGTH] = {0};
+
+    /* Block A'' */
+    ip[n] = X+1;            /* virtual label (X = n+1) */
+    i = 1;
+    c = root = node(); push(ip[0], root);
+    processed[ip[0]] = 1;
+
+    while (1) {
+	if (lbl_comp++, ip[i-1] > ip[i]) { /* Test β */
+	    /* Block B' */
+	    c = c->left = node(); /* create the left child */
+	} else {
+	    /* Block C' */
+            c = pop()->right = node();
+	}
+        if (end_comp++, !processed[ip[i]+1]) {
+            if (end_comp++, i >= n) /* Test not α */
+                break;
+            push(ip[i], c);
+        }
+        processed[ip[i]] = 1;
+	/* Block E */
+	i++;
+    }
+
+    return root;
+}
+
+// Algorithm C: minimize # of label comparisons (n-1)
+// # of the other comparisons = n + n-1 = 2n-1
+// Push only the nodes that are qualified as right children (if we have not yet visited the next node in inorder traversals.)
+Node *algo_c3(int ip[], int n)
+{
+    Node *root, *c;
+    char visited[MAX_LENGTH] = {0};
+
+    c = root = node(); push(ip[0], root);
+    visited[ip[0]] = 1;
+
+    for (int i = 1; i < n; i++) {
+	if (ip[i-1] > ip[i])           /* Test β */
+	    c = c->left = node();      /* create the left child */
+	else
+            c = pop()->right = node(); /* create the right child */
+        if (!visited[ip[i]+1]) push(ip[i], c);
+        visited[ip[i]] = 1;
+    }
+
+    return root;
+}
+
+// Algorithm C: minimize # of label comparisons (n-1)
+// # of the other comparisons = n + n-1 = 2n-1
+Node *algo_c4(int ip[], int n)
+{
+    Node *s, *p;
+    bool visited[MAX_LENGTH] = {0};
+
+    Node *nodes = node_array(n);
+    s = &nodes[0];
+    visited[ip[0]] = true;
+
+    for (int i = 1; i < n; i++) {
+	if (ip[i-1] > ip[i])           /* Test β */
+	    nodes[i-1].left = &nodes[i];      /* the left child */
+	else {
+            p = s;
+            s = s->right;
+            p->right = &nodes[i]; /* the right child */
+        }
+        if (!visited[ip[i]+1]) {
+            nodes[i].right = s;
+            s = &nodes[i];
+        }
+        visited[ip[i]] = true;
+    }
+
+    return nodes;
+}
+
+// Algorithm C: minimize # of label comparisons (n-1)
+// # of the other comparisons = n + n-1 = 2n-1
+// Push only the nodes that are qualified as right children (if we have not yet visited the next node in inorder traversals.)
+Node *algo_c5(int ip[], int n)
+{
+    Node *s, *p;
+    bool visited[MAX_LENGTH] = {0};
+
+    Node *nodes = node_array(n);
+    s = &nodes[0];
+    visited[ip[0]] = true;
+
+    for (int i = 1; i < n; i++) {
+        Node *c = &nodes[i];
+	if (ip[i-1] > ip[i])           /* Test β */
+	    nodes[i-1].left = c;      /* the left child */
+	else {
+            p = s;
+            s = s->right;
+            p->right = c; /* the right child */
+        }
+        if (!visited[ip[i]+1]) {
+            nodes[i].right = s;
+            s = c;
+        }
+        visited[ip[i]] = true;
+    }
+
+    return nodes;
+}
+
+// Algorithm C: minimize # of label comparisons (n-1)
+// # of the other comparisons = n + n-1 = 2n-1
+Node *algo_c6(int ip[], int n)
+{
+    Node *s, *p;
+    bool visited[MAX_LENGTH] = {0};
+    Node *nodes = node_array(n+1);
+    int i;
+
+    ip[n] = X+1;            /* virtual label (X = n+1) */
+    s = &nodes[0];
+    visited[ip[0]] = true;
+    i = 1;
+
+    while (1) {
+        Node *c = &nodes[i];
+	if (lbl_comp++, ip[i-1] > ip[i])           /* Test β */
+	    nodes[i-1].left = c;      /* the left child */
+	else {
+            if (end_comp++, i >= n) /* Test not α */
+                break;
+            p = s;
+            s = s->right;
+            p->right = c; /* the right child */
+        }
+        if (end_comp++, !visited[ip[i]+1]) {
+            nodes[i].right = s;
+            s = c;
+        }
+        visited[ip[i]] = true;
+        i++;
+    }
+
+    return nodes;               /* return root */
+}
+
+Node *algo_c(int ip[], int n) {
+    return algo_c5(ip, n);
+}
+
 int main(int argc, char *argv[])
 {
-    char str[MAX_LENGTH], *p, i = 0, n;
+    char str[MAX_LENGTH], *p;
+    int i = 0, n;
     int length, ip[MAX_LENGTH];
     Node *root;
     int opt;
     int debug = 0;
     int algorithm = 'n';	/* default algorithm */
 
-    while ((opt = getopt(argc, argv, "bdmn")) != -1)
+    while ((opt = getopt(argc, argv, "bcdmnt")) != -1)
     {
         switch (opt)
         {
@@ -271,6 +442,12 @@ int main(int argc, char *argv[])
                 break;
             case 'm':
 		algorithm = 'm';
+                break;
+            case 'c':
+		algorithm = 'c';
+                break;
+            case 't':
+		debug = 2;
                 break;
             case '?':
                 fprintf(stderr, "Unknown option\n");
@@ -306,6 +483,9 @@ int main(int argc, char *argv[])
     case 'b':
 	root = algo_b(ip, n);
 	break;
+    case 'c':
+	root = algo_c(ip, n);
+	break;
     case 'm':
 	root = algo_m(ip, n);
 	break;
@@ -314,12 +494,17 @@ int main(int argc, char *argv[])
 	exit(EXIT_FAILURE);
     }
 
-    /* The option -d is for debugging to display the tree structure */
-    if (debug) {
+    switch (debug) {
+    case 2: /* The option -t is for only printing trees */
+        printTree(root); printf("\n");
+        break;
+    case 1: /* The option -d is for debugging to display the tree structure */
         puts("====");
         printTree(root);
         printf("\nlbl,end\n");
+        printf("%d,%d\n", lbl_comp, end_comp);
+    default:
     }
-    printf("%d,%d\n", lbl_comp, end_comp);
-}
 
+    return 0;
+}
