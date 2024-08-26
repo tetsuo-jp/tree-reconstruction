@@ -295,14 +295,14 @@ Node *algo_c2(int ip[], int n)
 }
 
 // Algorithm C: minimize # of label comparisons (n-1)
-// # of the other comparisons = n + n-1 = 2n-1
+// # of the other comparisons = n (loop) + n-1 (visit?) = 2n-1
 // Push only the nodes that are qualified as right children (if we have not yet visited the next node in inorder traversals.)
 Node *algo_c3(int ip[], int n)
 {
     Node *root, *c;
-    char visited[MAX_LENGTH] = {0};
+    char visited[MAX_LENGTH] = {0};    /* always O(n) space overhead required */
 
-    c = root = node(); push(ip[0], root);
+    c = root = node(); push(ip[0], root); /* the root may or may not have a right child */
     visited[ip[0]] = 1;
 
     for (int i = 1; i < n; i++) {
@@ -310,7 +310,8 @@ Node *algo_c3(int ip[], int n)
 	    c = c->left = node();      /* create the left child */
 	else
             c = pop()->right = node(); /* create the right child */
-        if (!visited[ip[i]+1]) push(ip[i], c);
+        if (!visited[ip[i]+1])         /* elems of ip are supporsed to be integers */
+            push(ip[i], c);            /* push a node that HAS a right child */
         visited[ip[i]] = 1;
     }
 
