@@ -53,6 +53,7 @@ mmm:
 		time sh -c "bzcat input/all_$$f.txt.bz2 | while read line; do echo \"\$$line\" | ./src/tc -mt; done > output_expected/$$f.txt";\
 	done
 
+
 test05: src/$(TARGET)
 	for f in 01 02 03 04 05 06 07 08 09 10 11 12 13 14; do \
 		echo "size = $$f ---------------------------";\
@@ -76,5 +77,11 @@ test06: src/$(TARGET)
 		done;\
 	done
 
+
+diff: src/$(TARGET)
+	for f in 01 02 03 04 05 06 07 08 09 10 11 12 13 14; do \
+		echo "size = $$f ---------------------------";\
+		zcmp output_expected/$$f.txt.bz2 output/test05_$${ALGO}_size$$f.txt.bz2;\
+	done
 
 .PHONEY: clean
