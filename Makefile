@@ -1,11 +1,12 @@
 TARGET=tc
+GHC:=ghc
 
 all: test01
 
 src/$(TARGET): src/$(TARGET).c
 
 src/gen_input: src/gen_input.hs
-	(cd src; ghc -O2 gen_input.hs)
+	(cd src; $(GHC) -O2 gen_input.hs)
 
 gen_inputs: input/all_01.txt.bz2
 input/all_01.txt.bz2:

@@ -1,31 +1,30 @@
 // A binary tree reconstruction, reversibly
-// without a sentinel
-// Tested on https://tetsuo.jp/janus-playground-180405/#0af4e679
+// without a sentinel, from an inorder-preorder seq to a tree and an inorder-preorder seq
+// Tested on
 
-procedure reconstruct(int ip[], int n, int p[], int l[], int r[])
+procedure reconstruct(int ip[], int n, int l[], int r[], stack g)
   local stack s = nil, int visited[n+1]
   visited[ip[0]] ^= 1
-  push(0, s)
+  push(ip[0], s)
   iterate int i = 1 to n-1
     if ip[i-1] > ip[i] then // grafting left child
-      l[i-1] ^= i
-      p[i] ^= i-1
+      l[ip[i-1]] ^= ip[i]
     else // grafting right child
       local int x
       pop(x,s)
-      r[x] ^= i
-      p[i] <=> x // zero clear x
+      r[x] ^= ip[i]
+      push(x,g)
       delocal int x
     fi ip[i-1] > ip[i]
     if visited[ip[i]+1] = 0 then
-      push(i+0,s)
+      push(ip[i],s)
     fi visited[ip[i]+1] = 0
     visited[ip[i]] ^= 1
   end
   iterate int i = 0 to n-1
     visited[i] ^= 1 // zero clear
   end
-  pop(ip[n-1],s) // clear s
+  pop(ip[n-1]+1,s) // clear s
   delocal stack s = nil, int visited[n+1]
 
 procedure main()
@@ -40,8 +39,8 @@ procedure main()
   int n = 8
   int ip[] = {3,1,0,2,5,4,7,6}
 
-  int p[n]
   int l[n]
   int r[n]
+  stack g
 
-  call reconstruct(ip, n, p, l, r)
+  call reconstruct(ip, n, l, r, g)
