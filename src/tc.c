@@ -376,6 +376,27 @@ Node *algo_c4(int ip[], int n)
     return nodes;
 }
 
+Node *algo_c4b(int ip[], int n)
+{
+    Node *nodes = node_array(n+1);
+    Node *s = &nodes[ip[0]];        /* stack */
+
+    for (int i = 1; i < n; i++) {
+	if (ip[i-1] > ip[i]) {                   /* Test β */
+	    nodes[ip[i-1]].left = &nodes[ip[i]]; /* grafting a left child */
+	} else {
+            Node *p = s;
+            s = s->right;             /* pop */
+            p->right = &nodes[ip[i]]; /* grafting a right child */
+        }
+        if (nodes[ip[i]+1].left == 0) {
+            nodes[ip[i]].right = s; s = &nodes[ip[i]];  /* push */
+        }
+    }
+
+    return &nodes[ip[0]];
+}
+
 // Algorithm C: minimize # of label comparisons (n-1)
 // # of the other comparisons = n + n-1 = 2n-1
 // Push only the nodes that are qualified as right children (if we have not yet visited the next node in inorder traversals.)
@@ -444,7 +465,7 @@ Node *algo_c6(int ip[], int n)
 }
 
 Node *algo_c(int ip[], int n) {
-    return algo_c3(ip, n);
+    return algo_c4b(ip, n);
 }
 
 int main(int argc, char *argv[])

@@ -1,6 +1,7 @@
 // A binary tree reconstruction, reversibly
 // without a sentinel, from an i-p seq to a tree and an i-p seq
-// Tested on https://tetsuo.jp/janus-playground-180405/#7d0a6bbb
+// An attempt to delete the visited[] array
+// Tested on https://tetsuo.jp/janus-playground-180405
 
 procedure reconstruct(int ip[], int n, int l[], int r[])
   local stack s = nil, int visited[n+2], int h = 1
@@ -10,6 +11,7 @@ procedure reconstruct(int ip[], int n, int l[], int r[])
     if ip[i-1] > ip[i] then // grafting left child
       l[ip[i-1]] ^= ip[i]
     else // grafting right child
+      l[ip[i-1]] ^= -1 // no left child
       local int x
       pop(x,s)
       r[x] ^= ip[i]
@@ -19,6 +21,7 @@ procedure reconstruct(int ip[], int n, int l[], int r[])
     if visited[ip[i]+1] = 0 then
       push(ip[i+0],s)
     else
+      r[ip[i]] ^= -1 // no right child
       h += 1
     fi visited[ip[i]+1] = 0
     visited[ip[i]] ^= 1

@@ -64,3 +64,5 @@ input/all_??.txt.bz2
 
 # Emacs backup files
 *~
+
+output
