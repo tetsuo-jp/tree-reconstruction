@@ -399,17 +399,15 @@ Node *algo_c4b(int ip[], int n)
 
 Node *algo_c4c(int ip[], int n)
 {
-    Node *s, *a = node_array(n+1);
-    pushN(&a[ip[0]]);        /* stack */
+    Node *a = node_array(n+1);
+    pushN(&a[ip[0]]);
 
     for (int i = 1; i < n; i++) {
-	if (ip[i-1] > ip[i]) {           /* Test β */
+	if (ip[i-1] > ip[i])             /* Test β */
 	    a[ip[i-1]].left = &a[ip[i]]; /* grafting a left child */
-	} else {
-            s = popN();
-            s->right = &a[ip[i]]; /* grafting a right child */
-        }
-        if (a[ip[i]+1].left == 0)
+	else
+            popN()->right = &a[ip[i]]; /* grafting a right child */
+        if (!a[ip[i]+1].left)          /* visited? */
             pushN(&a[ip[i]]);
     }
 
