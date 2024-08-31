@@ -403,14 +403,30 @@ Node *algo_c4c(int ip[], int n)
     pushN(&a[ip[0]]);
 
     for (int i = 1; i < n; i++) {
-	if (ip[i-1] > ip[i])             /* Test β */
-	    a[ip[i-1]].left = &a[ip[i]]; /* grafting a left child */
-	else
+	    if (ip[i-1] > ip[i])             /* Test β */
+	        a[ip[i-1]].left = &a[ip[i]]; /* grafting a left child */
+	    else
             popN()->right = &a[ip[i]]; /* grafting a right child */
         if (!a[ip[i]+1].left)          /* visited? */
             pushN(&a[ip[i]]);
     }
 
+    return &a[ip[0]];
+}
+
+// Use of pointers
+Node *algo_c4c2(int ip[], int n)
+{
+    Node *a = node_array(n+1);
+    pushN(&a[ip[0]]);
+    for (int *b=&ip[1]; b < &ip[0]+n; b++) {
+	    if (*(b-1) > *b)             /* Test β */
+	        a[*(b-1)].left = &a[*b]; /* grafting a left child */
+	    else
+            popN()->right = &a[*b]; /* grafting a right child */
+        if (!a[*b+1].left)          /* visited? */
+            pushN(&a[*b]);
+    }
     return &a[ip[0]];
 }
 
@@ -505,7 +521,7 @@ Node *algo_c6(int ip[], int n)
 }
 
 Node *algo_c(int ip[], int n) {
-    return algo_c4c(ip, n);
+    return algo_c4c2(ip, n);
 }
 
 int main(int argc, char *argv[])
