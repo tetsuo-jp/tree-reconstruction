@@ -414,6 +414,28 @@ Node *algo_c4c(int ip[], int n)
     return &a[ip[0]];
 }
 
+// no stack
+Node *algo_c4d(int ip[], int n)
+{
+    int h = 1;
+    Node *a = node_array(n+1);
+
+    for (int i = 1; i < n; i++) {
+	if (ip[i-1] > ip[i]) {            /* Test β */
+            printf("L h=%d, i=%d\n", h, i);
+	    a[ip[i-1]].left = &a[ip[i]]; /* grafting a left child */
+        }
+	else {
+            printf("R h=%d, i=%d\n", h, i);
+            a[h++].right = &a[ip[i]]; /* grafting a right child */
+        }
+        if (a[ip[i]+1].left)    /* visited? */
+            h++;
+    }
+
+    return &a[ip[0]];
+}
+
 // Algorithm C: minimize # of label comparisons (n-1)
 // # of the other comparisons = n + n-1 = 2n-1
 // Push only the nodes that are qualified as right children (if we have not yet visited the next node in inorder traversals.)
@@ -482,7 +504,7 @@ Node *algo_c6(int ip[], int n)
 }
 
 Node *algo_c(int ip[], int n) {
-    return algo_c4c(ip, n);
+    return algo_c4d(ip, n);
 }
 
 int main(int argc, char *argv[])
@@ -526,7 +548,14 @@ int main(int argc, char *argv[])
         }
     }
 
-    scanf("%s", str);
+    {
+        int result;
+        result = scanf("%s", str);
+        if (result != 1) {
+            fprintf(stderr, "input error\n");
+            return 1;
+        }
+    }
     length = strlen(str);
     if (str[length - 1] == '\n') {
         str[--length] = '\0';
