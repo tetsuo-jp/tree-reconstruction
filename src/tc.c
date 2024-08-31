@@ -414,7 +414,7 @@ Node *algo_c4c(int ip[], int n)
     return &a[ip[0]];
 }
 
-// no stack
+// no stack (failed)
 Node *algo_c4d(int ip[], int n)
 {
     int h = 1;
@@ -424,10 +424,11 @@ Node *algo_c4d(int ip[], int n)
 	if (ip[i-1] > ip[i]) {            /* Test β */
             printf("L h=%d, i=%d\n", h, i);
 	    a[ip[i-1]].left = &a[ip[i]]; /* grafting a left child */
-        }
-	else {
+        } else {
             printf("R h=%d, i=%d\n", h, i);
-            a[h++].right = &a[ip[i]]; /* grafting a right child */
+            printTree(&a[ip[0]]);printf("\n");
+            a[h-1].right = &a[ip[i]]; /* grafting a right child */
+            printTree(&a[ip[0]]);printf("\n");
         }
         if (a[ip[i]+1].left)    /* visited? */
             h++;
@@ -504,7 +505,7 @@ Node *algo_c6(int ip[], int n)
 }
 
 Node *algo_c(int ip[], int n) {
-    return algo_c4d(ip, n);
+    return algo_c4c(ip, n);
 }
 
 int main(int argc, char *argv[])
