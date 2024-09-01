@@ -100,4 +100,17 @@ test07: src/$(TARGET)
 		done;\
 	done
 
+test07tmp: src/$(TARGET)
+	for f in 12 13 14; do \
+		echo "size = $$f ---------------------------";\
+		for algo in m n; do \
+			ALGO=$$(echo $$algo | tr 'a-z' 'A-Z'); \
+			echo "Processing $$f by Algorithm $${ALGO}";\
+			time sh -c "bzcat input/all_$$f.txt.bz2 | while read line; do echo \"\$$line\" | ./src/tc -$${algo}t; done > output/test05_$${ALGO}_size$$f.txt";\
+			bzip2 -c output/test05_$${ALGO}_size$$f.txt > output/test05_$${ALGO}_size$$f.txt.bz2;\
+			rm -f output/test05_$${ALGO}_size$$f.txt;\
+			zcmp output_expected/$$f.txt.bz2 output/test05_$${ALGO}_size$$f.txt.bz2;\
+		done;\
+	done
+
 .PHONEY: clean
