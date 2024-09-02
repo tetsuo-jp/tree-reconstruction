@@ -66,3 +66,6 @@ input/all_??.txt.bz2
 *~
 
 output
+
+# MS code
+.vscode

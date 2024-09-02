@@ -430,6 +430,37 @@ Node *algo_c4c2(int ip[], int n)
     return &a[ip[0]];
 }
 
+// Use of pointers
+Node *algo_c4c3(int ip[], int n)
+{
+    Node *a = node_array(n+1);
+    Node *s = &a[ip[0]];
+    for (int i = 1; i < n; i++) {
+        if (ip[i-1] > ip[i])             /* Test β */
+            a[ip[i-1]].left = &a[ip[i]]; /* grafting a left child */
+        else {
+            Node *p = s;             /* pop */
+            s = s->right;
+            p->right = &a[ip[i]]; /* grafting a right child */
+        }
+        if (!a[ip[i]+1].left) {          /* visited? */
+            a[ip[i]].right = s; s = &a[ip[i]];   /* push */
+        }
+    }
+//    free(s);
+    return &a[ip[0]];
+}
+
+Node *algo_c4c0(int ip[], int n)
+{
+    Node *a = node_array(n+1);
+    Node **s = (Node**)malloc((n+1)/2 * sizeof(Node*)); // stack
+    int sp = 0;
+    // dummy program to time the stack allocation
+    free(s);
+    return &a[ip[0]];
+}
+
 // no stack (failed)
 Node *algo_c4d(int ip[], int n)
 {
@@ -521,7 +552,7 @@ Node *algo_c6(int ip[], int n)
 }
 
 Node *algo_c(int ip[], int n) {
-    return algo_c4c2(ip, n);
+    return algo_c4c3(ip, n);
 }
 
 int main(int argc, char *argv[])
