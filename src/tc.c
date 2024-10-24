@@ -403,9 +403,26 @@ Node *algo_c4c(int ip[], int n)
     pushN(&a[ip[0]]);
 
     for (int i = 1; i < n; i++) {
-	    if (ip[i-1] > ip[i])             /* Test β */
-	        a[ip[i-1]].left = &a[ip[i]]; /* grafting a left child */
-	    else
+        if (ip[i-1] > ip[i])             /* Test β */
+            a[ip[i-1]].left = &a[ip[i]]; /* grafting a left child */
+        else
+            popN()->right = &a[ip[i]]; /* grafting a right child */
+        if (!a[ip[i]+1].left)         /* visited? */
+            pushN(&a[ip[i]]);
+    }
+
+    return &a[ip[0]];
+}
+
+Node *algo_c4c1(int ip[], int n)
+{
+    Node *a = node_array(n+1);
+    // pushN(&a[ip[0]]); // this line is necessary
+
+    for (int i = 1; i < n; i++) {
+        if (ip[i-1] > ip[i])             /* Test β */
+            a[ip[i-1]].left = &a[ip[i]]; /* grafting a left child */
+        else
             popN()->right = &a[ip[i]]; /* grafting a right child */
         if (!a[ip[i]+1].left)          /* visited? */
             pushN(&a[ip[i]]);
@@ -420,9 +437,9 @@ Node *algo_c4c2(int ip[], int n)
     Node *a = node_array(n+1);
     pushN(&a[ip[0]]);
     for (int *b=&ip[1]; b < &ip[0]+n; b++) {
-	    if (*(b-1) > *b)             /* Test β */
-	        a[*(b-1)].left = &a[*b]; /* grafting a left child */
-	    else
+        if (*(b-1) > *b)             /* Test β */
+            a[*(b-1)].left = &a[*b]; /* grafting a left child */
+        else
             popN()->right = &a[*b]; /* grafting a right child */
         if (!a[*b+1].left)          /* visited? */
             pushN(&a[*b]);
@@ -450,6 +467,25 @@ Node *algo_c4c3(int ip[], int n)
 //    free(s);
     return &a[ip[0]];
 }
+
+// Use of index
+Node *algo_c4c5(int ip[], int n)
+{
+    Node *a = (Node*)calloc(n+1, sizeof(Node));
+    pushN(&a[ip[0]]);
+
+    for (int i = 1; i < n; i++) {
+        if (ip[i-1] > ip[i])             /* Test β */
+            a[ip[i-1]].left = &a[ip[i]]; /* grafting a left child */
+        else
+            popN()->right = &a[ip[i]]; /* grafting a right child */
+        if (!a[ip[i]+1].left)         /* visited? */
+            pushN(&a[ip[i]]);
+    }
+
+    return &a[ip[0]];
+}
+
 
 Node *algo_c4c0(int ip[], int n)
 {
@@ -552,7 +588,8 @@ Node *algo_c6(int ip[], int n)
 }
 
 Node *algo_c(int ip[], int n) {
-    return algo_c4c3(ip, n);
+    return algo_c4c(ip, n);
+//    return algo_c4c3(ip, n);
 }
 
 int main(int argc, char *argv[])
@@ -565,7 +602,7 @@ int main(int argc, char *argv[])
     int debug = 0;
     int algorithm = 'n';	/* default algorithm */
 
-    while ((opt = getopt(argc, argv, "bcdmnt")) != -1)
+    while ((opt = getopt(argc, argv, "bcdmntx")) != -1)
     {
         switch (opt)
         {
@@ -586,6 +623,8 @@ int main(int argc, char *argv[])
                 break;
             case 't':
 		debug = 2;
+                break;
+            case 'x':
                 break;
             case '?':
                 fprintf(stderr, "Unknown option\n");
@@ -633,6 +672,8 @@ int main(int argc, char *argv[])
 	break;
     case 'm':
 	root = algo_m(ip, n);
+	break;
+    case 'x':
 	break;
     default:
 	fprintf(stderr, "Unknown option\n");

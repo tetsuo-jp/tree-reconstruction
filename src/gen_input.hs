@@ -5,7 +5,7 @@ data T = L | N T Int T deriving Show
 
 -- generate a list of inorder-labelled trees of size n
 gen_inorder :: Int -> [T]
-gen_inorder n = g 1 n
+gen_inorder n = g 0 (n-1)
   where
   g :: Int {- from -} -> Int {- to -} -> [T]
   g m n
@@ -17,7 +17,7 @@ gen_inorder n = g 1 n
 
 -- generate a list of preorder-labelled trees of size n
 gen_preorder :: Int -> [T]
-gen_preorder n = g 1 n
+gen_preorder n = g 0 (n-1)
   where
   g :: Int {- from -} -> Int {- to -} -> [T]
   g m n

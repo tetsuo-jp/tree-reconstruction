@@ -1,9 +1,12 @@
 TARGET=tc
-GHC:=ghc
+GHC:=stack ghc -- -Wall -O2
 
 all: src/$(TARGET)
 
 src/$(TARGET): src/$(TARGET).c
+	cc -O2 -o $@ $<
+
+src/tc_c: src/tc_c.c
 	cc -O2 -o $@ $<
 
 src/gen_input: src/gen_input.hs
@@ -16,9 +19,9 @@ src/gen_input: src/gen_input.hs
 # 	done
 
 gen_inputs: input/all_01.txt.bz2 input/all_02.txt.bz2 input/all_03.txt.bz2 input/all_04.txt.bz2 input/all_05.txt.bz2 input/all_06.txt.bz2 input/all_07.txt.bz2 input/all_08.txt.bz2 input/all_09.txt.bz2 input/all_10.txt.bz2 input/all_11.txt.bz2 input/all_12.txt.bz2 input/all_13.txt.bz2 input/all_14.txt.bz2
-input/all_%.txt.bz2:
+input/all_%.txt.bz2: src/gen_input
 	./src/gen_input $* | bzip2 -c > $@
-	
+
 clean:
 	rm -f src/$(TARGET)
 	rm -f src/*.hi src/*.o src/gen_input
@@ -80,4 +83,40 @@ test05c: src/$(TARGET)
 		done;\
 	done
 
-.PHONEY: clean
+cp_test05: src/tc_c
+	for f in 01 02 03 04 05 06 07 08 09 10 11 12 13 14; do \
+		echo "size = $$f ---------------------------";\
+		ALGO=CP; \
+		echo "Processing $$f by Algorithm $${ALGO}";\
+		time sh -c "bzcat input/all_$$f.txt.bz2 | while read line; do echo \"\$$line\" | ./src/tc_c -ct; done > output/test05_$${ALGO}_size$$f.txt";\
+		bzip2 -c output/test05_$${ALGO}_size$$f.txt > output/test05_$${ALGO}_size$$f.txt.bz2;\
+		rm -f output/test05_$${ALGO}_size$$f.txt;\
+		zcmp output_expected/$$f.txt.bz2 output/test05_$${ALGO}_size$$f.txt.bz2;\
+	done
+
+cp_diff06:
+	for f in 01 02 03 04 05 06 07 08 09 10 11 12 13 14; do \
+		echo "size = $$f ---------------------------";\
+		ALGO=CP;\
+		zcmp output_expected/$$f.txt.bz2 output/test05_$${ALGO}_size$$f.txt.bz2;\
+	done
+
+time_cp: src/tc_c
+	f=11; ALGO=CP; \
+	sudo sync; sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches';\
+	echo "====Processing $$f by Algorithm None (mesuring IO time)";\
+	time sh -c "bzcat input/all_$${f}.txt.bz2 | while read line; do echo \"\$$line\" | ./src/tc_c -x; done"; \
+	sudo sync; sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches';\
+	echo "====Processing $$f by Algorithm $${ALGO}";\
+	time sh -c "bzcat input/all_$${f}.txt.bz2 | while read line; do echo \"\$$line\" | ./src/tc_c -c; done";
+
+time_c: src/${TARGET}
+	f=11; ALGO=C; \
+	sudo sync; sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches';\
+	echo "====Processing $$f by Algorithm None (mesuring IO time)";\
+	time sh -c "bzcat input/all_$${f}.txt.bz2 | while read line; do echo \"\$$line\" | ./src/tc -x; done"; \
+	sudo sync; sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches';\
+	echo "====Processing $$f by Algorithm $${ALGO}";\
+	time sh -c "bzcat input/all_$${f}.txt.bz2 | while read line; do echo \"\$$line\" | ./src/tc -c; done";
+
+.PHONEY: clean gen_inputs

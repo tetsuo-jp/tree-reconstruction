@@ -53,6 +53,7 @@ dkms.conf
 
 # Target files
 src/tc
+src/tc_c
 src/gen_input
 
 # Haskell files
