@@ -21,12 +21,12 @@
 int spI = 0;
 int stackI[MAX_LENGTH];
 
-void PUSH(int x)
+void pushN(int x)
 {
     stackI[spI++] = x;
 }
 
-int POP(void)
+int popN(void)
 {
     return stackI[--spI];
 }
@@ -38,6 +38,20 @@ struct node {
 typedef struct node Node;
 
 #define LEAF -1
+
+int spA = -1;
+void PUSH(int x, Node a[])
+{
+    a[x].right = spA;
+    spA = x;
+}
+
+int POP(Node a[])
+{
+    int tmp = spA;
+    spA = a[spA].right;
+    return tmp;
+}
 
 void printTree(Node a[], int ip[], int x)
 {
@@ -61,17 +75,43 @@ int end_comp = 0, lbl_comp = 0;
 // Push only the nodes that are qualified as right children (if we have not yet visited the next node in inorder traversals.)
 void algo_c(int ip[], int n, Node a[])
 {
-    PUSH(ip[0]); /* ip[n] = n+1; */
+    pushN(ip[0]); /* ip[n] = n+1; */
     for (int i = 1; i < n; i++) {
         if (ip[i-1] > ip[i])         /* Test β */
             a[ip[i-1]].left = ip[i]; /* grafting a left child */
         else
-            a[POP()].right = ip[i];  /* grafting a right child */
+            a[popN()].right = ip[i];  /* grafting a right child */
         if (a[ip[i]+1].left == LEAF) /* visited? */
-            PUSH(ip[i]);
+            pushN(ip[i]);
     }
 }
 
+void algo_c_pointer(int *p, int n, Node a[])
+{
+    pushN(*p);
+    for (p++; p < &a[n]; p++) {
+        if (*(p-1) > *p)         /* Test β */
+            a[*(p-1)].left = *p; /* grafting a left child */
+        else
+            a[popN()].right = *p;  /* grafting a right child */
+        if (a[*p+1].left == LEAF) /* visited? */
+            pushN(*p);
+    }
+}
+
+// Alternative stack implementation
+void algo_c_stack(int ip[], int n, Node a[])
+{
+    PUSH(ip[0],a); /* ip[n] = n+1; */
+    for (int i = 1; i < n; i++) {
+        if (ip[i-1] > ip[i])         /* Test β */
+            a[ip[i-1]].left = ip[i]; /* grafting a left child */
+        else
+            a[POP(a)].right = ip[i];  /* grafting a right child */
+        if (a[ip[i]+1].left == LEAF) /* visited? */
+            PUSH(ip[i],a);
+    }
+}
 
 // Debugging functions
 void print_array(int ip[], int n)
@@ -176,7 +216,7 @@ int main(int argc, char *argv[])
     root = ip[0];
     switch (algorithm) {
     case 'c':
-	algo_c(ip, n, a);
+	algo_c_stack(ip, n, a);
 	break;
     case 'x':
         break;
